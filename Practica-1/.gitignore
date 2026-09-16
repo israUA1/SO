@@ -23,3 +23,6 @@ core.*
 # Sistema operativo
 .DS_Store
 Thumbs.db
+
+# Ejecutables o Archivos generados
+/bin/
