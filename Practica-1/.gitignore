@@ -1,0 +1,25 @@
+# Archivos compilados
+*.o
+*.obj
+*.out
+*.exe
+a.out
+
+# Carpetas de compilación
+/build/
+/bin/
+
+# Archivos de depuración
+*.dSYM/
+core
+core.*
+
+# Editores e IDEs
+.vscode/
+.idea/
+*.swp
+*~
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
