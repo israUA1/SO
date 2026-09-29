@@ -1,4 +1,5 @@
 #include <fcntl.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
@@ -128,6 +129,7 @@ int main(int argc, char *argv[])
     off_t restantes = datos.st_size;
     int numero = 0;
     int error = 0;
+    signal(SIGPIPE, SIG_IGN);
 
     while (restantes > 0) {
         int cantidad = restantes < tamano ? (int)restantes : tamano;
