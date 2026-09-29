@@ -26,3 +26,8 @@ Thumbs.db
 
 # Ejecutables o Archivos generados
 /bin/
+
+#txt y otros para pruebas
+/archivo.txt
+/archivo.txt.h*
+/reconstruido.txt
