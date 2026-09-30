@@ -3,6 +3,12 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <signal.h>
+
+void despertar(int numero)
+{
+    (void)numero;
+}
 
 int main(int argc, char *argv[])
 {
@@ -53,9 +59,11 @@ int main(int argc, char *argv[])
                 }
             }
 
-            if (pid2 == 0) {
-                sleep(30);
-            }
+        if (pid2 == 0) {
+            signal(SIGALRM, despertar);
+            alarm(30);
+            pause();
+        }
 
             break;
         }
