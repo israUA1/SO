@@ -13,7 +13,6 @@ int escribir_bloque(int destino, char *buffer, int cantidad)
 
     while (enviados < cantidad) {
         ssize_t escritos = write(destino, buffer + enviados, cantidad - enviados);
-
         if (escritos < 0) {
             perror("write");
             return -1;
@@ -21,10 +20,8 @@ int escribir_bloque(int destino, char *buffer, int cantidad)
         if (escritos == 0) {
             return -1;
         }
-
         enviados += escritos;
     }
-
     return 0;
 }
 
@@ -36,11 +33,9 @@ int enviar_trozo(int archivo, int escritura, int cantidad)
 
     char buffer[4096];
     int restantes = cantidad;
-
     while (restantes > 0) {
         int pedir = restantes < (int)sizeof buffer ? restantes : (int)sizeof buffer;
         ssize_t leidos = read(archivo, buffer, pedir);
-
         if (leidos < 0) {
             perror("read");
             return -1;
@@ -48,14 +43,11 @@ int enviar_trozo(int archivo, int escritura, int cantidad)
         if (leidos == 0) {
             return -1;
         }
-
         if (escribir_bloque(escritura, buffer, leidos) < 0) {
             return -1;
         }
-
         restantes -= leidos;
     }
-
     return 0;
 }
 
@@ -73,10 +65,8 @@ int guardar_trozo(int lectura, const char *nombre)
 
     char buffer[4096];
     int resultado = 0;
-
     while (1) {
         ssize_t leidos = read(lectura, buffer, sizeof buffer);
-
         if (leidos < 0) {
             perror("read");
             resultado = -1;
@@ -85,7 +75,6 @@ int guardar_trozo(int lectura, const char *nombre)
         if (leidos == 0) {
             break;
         }
-
         if (escribir_bloque(destino, buffer, leidos) < 0) {
             resultado = -1;
             break;
@@ -96,24 +85,12 @@ int guardar_trozo(int lectura, const char *nombre)
         perror("close");
         resultado = -1;
     }
-
     return resultado;
 }
 
-int main(int argc, char *argv[])
+int dividir_archivo(const char *nombre_archivo, int tamano)
 {
-    if (argc != 3) {
-        write(2, "Uso: ./hacha <archivo> <tamano>\n", 32);
-        return 1;
-    }
-
-    int tamano = atoi(argv[2]);
-    if (tamano <= 0) {
-        write(2, "El tamano debe ser positivo\n", 28);
-        return 1;
-    }
-
-    int archivo = open(argv[1], O_RDONLY);
+    int archivo = open(nombre_archivo, O_RDONLY);
     if (archivo < 0) {
         perror("open");
         return 1;
@@ -130,16 +107,15 @@ int main(int argc, char *argv[])
     int numero = 0;
     int error = 0;
     signal(SIGPIPE, SIG_IGN);
-
     while (restantes > 0) {
         int cantidad = restantes < tamano ? (int)restantes : tamano;
         char nombre[512];
-        int longitud = snprintf(nombre, sizeof nombre, "%s.h%02d", argv[1], numero);
+        int longitud = snprintf(nombre, sizeof nombre, "%s.h%02d",
+                                nombre_archivo, numero);
         if (longitud < 0 || longitud >= (int)sizeof nombre) {
             error = 1;
             break;
         }
-
         int tubo[2];
         if (pipe(tubo) < 0) {
             perror("pipe");
@@ -155,7 +131,6 @@ int main(int argc, char *argv[])
             error = 1;
             break;
         }
-
         if (hijo == 0) {
             close(archivo);
             close(tubo[1]);
@@ -178,11 +153,31 @@ int main(int argc, char *argv[])
             error = 1;
             break;
         }
-
         restantes -= cantidad;
         numero++;
     }
-
     close(archivo);
     return error;
+}
+
+int leer_tamano(int argc, char *argv[])
+{
+    if (argc != 3) {
+        write(2, "Uso: ./hacha <archivo> <tamano>\n", 32);
+        return -1;
+    }
+    int tamano = atoi(argv[2]);
+    if (tamano <= 0) {
+        write(2, "El tamano debe ser positivo\n", 28);
+        return -1;
+    }
+    return tamano;
+}
+
+int main(int argc, char *argv[])
+{
+    int tamano = leer_tamano(argc, argv);
+    if (tamano <= 0)
+        return 1;
+    return dividir_archivo(argv[1], tamano);
 }
